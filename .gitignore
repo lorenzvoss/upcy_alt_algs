@@ -248,6 +248,6 @@ modules.xml
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,macos,intellij
 
-.vscode/launch.json
+.vscode/
 2022_02_12_neo4j_maven/
 2022_07_14_mongodb/
