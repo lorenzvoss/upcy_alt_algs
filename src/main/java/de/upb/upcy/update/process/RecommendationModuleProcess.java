@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 class RecommendationModuleProcess {
   private static final Logger LOGGER = LoggerFactory.getLogger(RecommendationModuleProcess.class);
 
+  private static String GRAPH_ALGORITHM = "edmondskarp";
+
   public static void main(String[] args) {
     String jsonString = args[0];
 
@@ -37,7 +39,8 @@ class RecommendationModuleProcess {
               inputParameter.getCsvFile(),
               inputParameter.getOutputDir(),
               inputParameter.getModuleName(),
-              inputParameter.getResults());
+              inputParameter.getResults(),
+              GRAPH_ALGORITHM);
       // write modules in separate files --- since we cannot serialize them into one (soot method
       // is not serializable with json)
       Path outputCsvFile =
