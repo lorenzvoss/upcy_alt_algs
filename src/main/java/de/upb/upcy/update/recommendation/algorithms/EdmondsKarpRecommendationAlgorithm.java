@@ -23,8 +23,6 @@ import de.upb.upcy.update.recommendation.check.Violation;
 import de.upb.upcy.update.recommendation.cypher.CypherQueryCreator;
 import de.upb.upcy.update.recommendation.exception.CompatabilityComputeException;
 import de.upb.upcy.update.recommendation.exception.EmptyCallGraphException;
-import soot.jimple.IdentityRef;
-import soot.rtlib.tamiflex.IUnexpectedReflectiveCallHandler;
 
 import java.io.File;
 import java.io.IOException;
