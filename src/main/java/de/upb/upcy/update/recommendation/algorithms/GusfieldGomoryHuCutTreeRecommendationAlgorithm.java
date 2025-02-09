@@ -14,7 +14,6 @@ import de.upb.upcy.base.mvn.MavenSearchAPIClient;
 import de.upb.upcy.update.recommendation.BlossomGraphCreator;
 import de.upb.upcy.update.recommendation.CGBuilder;
 import de.upb.upcy.update.recommendation.CustomEdge;
-import de.upb.upcy.update.recommendation.IRecommendationAlgorithm;
 import de.upb.upcy.update.recommendation.MinCut;
 import de.upb.upcy.update.recommendation.NodeMatchUtil;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
