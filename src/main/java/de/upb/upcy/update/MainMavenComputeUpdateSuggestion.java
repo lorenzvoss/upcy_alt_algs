@@ -7,8 +7,9 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.update.build.PipelineRunner;
+import de.upb.upcy.update.helper.RecommendationAlgorithmInitHelper;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
-import de.upb.upcy.update.recommendation.algorithms.EdmondsKarpRecommendationAlgorithm;
+import de.upb.upcy.update.recommendation.algorithms.IRecommendationAlgorithm;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,134 +31,147 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Main class for computing updates for a Maven module. Input is read via the CLI.
+ * Main class for computing updates for a Maven module. Input is read via the
+ * CLI.
  *
  * @author adann
  */
 public class MainMavenComputeUpdateSuggestion {
-  private static final Logger LOGGER =
-      LoggerFactory.getLogger(MainMavenComputeUpdateSuggestion.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(MainMavenComputeUpdateSuggestion.class);
 
-  public static void main(String[] args) {
+    public static void main(String[] args) {
 
-    // create the command line parser
-    CommandLineParser parser = new DefaultParser();
+        // create the command line parser
+        CommandLineParser parser = new DefaultParser();
 
-    // create the Options
-    Options options = new Options();
-    options.addOption(
-        Option.builder("module")
-            .longOpt("maven-module")
-            .desc("path to the maven module")
-            .hasArg()
-            .required(true)
-            .build());
-    options.addOption(
-        Option.builder("dg")
-            .longOpt("dependency-graph")
-            .desc("the generated dependency graph as json")
-            .hasArg()
-            .required(true)
-            .build());
-    options.addOption(
-        Option.builder("gav")
-            .desc("the GAV of the dependency to update in the form - group:artifact:version")
-            .hasArg()
-            .required(true)
-            .build());
-    options.addOption(
-        Option.builder("targetGav")
-            .desc("the target GAV in the form - group:artifact:version")
-            .hasArg()
-            .required(true)
-            .build());
-    options.addOption(
-        Option.builder("preflight")
-            .desc("check if everything is running")
-            .optionalArg(true)
-            .hasArg(false)
-            .required(false)
-            .build());
+        // create the Options
+        Options options = new Options();
+        options.addOption(
+                Option.builder("module")
+                        .longOpt("maven-module")
+                        .desc("path to the maven module")
+                        .hasArg()
+                        .required(true)
+                        .build());
+        options.addOption(
+                Option.builder("dg")
+                        .longOpt("dependency-graph")
+                        .desc("the generated dependency graph as json")
+                        .hasArg()
+                        .required(true)
+                        .build());
+        options.addOption(
+                Option.builder("gav")
+                        .desc("the GAV of the dependency to update in the form - group:artifact:version")
+                        .hasArg()
+                        .required(true)
+                        .build());
+        options.addOption(
+                Option.builder("targetGav")
+                        .desc("the target GAV in the form - group:artifact:version")
+                        .hasArg()
+                        .required(true)
+                        .build());
+        options.addOption(
+                Option.builder("preflight")
+                        .desc("check if everything is running")
+                        .optionalArg(true)
+                        .hasArg(false)
+                        .required(false)
+                        .build());
+        options.addOption(
+                Option.builder("graphAlgorithm")
+                        .desc("choose the used graph algorithm")
+                        .hasArg(true)
+                        .required(false)
+                        .build());
 
-    try {
-      // parse the command line arguments
-      CommandLine line = parser.parse(options, args);
-      if (line.hasOption("preflight")) {
-        System.out.println("Running Pre-Flight Checks...");
-        // execute preflight check
-        final boolean b = PreFlight.preFlightCheck();
-        if (b) {
-          System.out.println("Everything is working!");
-          System.exit(0);
+        try {
+            // parse the command line arguments
+            CommandLine line = parser.parse(options, args);
+            if (line.hasOption("preflight")) {
+                System.out.println("Running Pre-Flight Checks...");
+                // execute preflight check
+                final boolean b = PreFlight.preFlightCheck();
+                if (b) {
+                    System.out.println("Everything is working!");
+                    System.exit(0);
+                }
+                System.err.println("Pre-Flight Check failed!");
+                System.exit(1);
+            }
+
+            // check if any alternative algorithm should be used
+            String graphAlgorithm = "minstCut";
+            if (line.hasOption("graphAlgorithm")) {
+                graphAlgorithm = line.getOptionValue("graphAlgorithm");
+            }
+            LOGGER.info("Chosen graph Algorithm: {}", graphAlgorithm);
+
+            handleModule(
+                    line.getOptionValue("module"),
+                    line.getOptionValue("dg"),
+                    line.getOptionValue("gav"),
+                    line.getOptionValue("targetGav"),
+                    graphAlgorithm);
+        } catch (ParseException exp) {
+            LOGGER.error("Unexpected exception:" + exp.getMessage());
+            // automatically generate the help statement
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("help", options);
         }
-        System.err.println("Pre-Flight Check failed!");
-        System.exit(1);
-      }
-
-      handleModule(
-          line.getOptionValue("module"),
-          line.getOptionValue("dg"),
-          line.getOptionValue("gav"),
-          line.getOptionValue("targetGav"));
-    } catch (ParseException exp) {
-      LOGGER.error("Unexpected exception:" + exp.getMessage());
-      // automatically generate the help statement
-      HelpFormatter formatter = new HelpFormatter();
-      formatter.printHelp("help", options);
-    }
-  }
-
-  private static void handleModule(
-      String moduleFolder, String depGraphFile, String orgGav, String targetGav) {
-    Path modulePath = Paths.get(moduleFolder);
-    Path outputDir = Paths.get(moduleFolder);
-
-    final String projectName = modulePath.getFileName().toString();
-
-    Path projectPom = modulePath.resolve("pom.xml");
-
-    if (!Files.exists(projectPom)) {
-      throw new IllegalArgumentException("No pom.xml found in: " + moduleFolder);
     }
 
-    PipelineRunner pipelineRunner = new PipelineRunner(projectName, projectPom);
+    private static void handleModule(
+            String moduleFolder, String depGraphFile, String orgGav, String targetGav, String graphAlgorithm) {
+        Path modulePath = Paths.get(moduleFolder);
+        Path outputDir = Paths.get(moduleFolder);
 
-    // the project/module names and the associated maveninvokerproject
-    final Map<String, MavenInvokerProject> run = pipelineRunner.run();
+        final String projectName = modulePath.getFileName().toString();
 
-    // run on the modules
-    List<UpdateSuggestion> updateSuggestion = Collections.emptyList();
+        Path projectPom = modulePath.resolve("pom.xml");
 
-    try {
+        if (!Files.exists(projectPom)) {
+            throw new IllegalArgumentException("No pom.xml found in: " + moduleFolder);
+        }
 
-      EdmondsKarpRecommendationAlgorithm recommendationAlgorithm =
-          new EdmondsKarpRecommendationAlgorithm(run.get(projectName), Paths.get(depGraphFile));
+        PipelineRunner pipelineRunner = new PipelineRunner(projectName, projectPom);
 
-      updateSuggestion = recommendationAlgorithm.run(orgGav, targetGav);
+        // the project/module names and the associated maveninvokerproject
+        final Map<String, MavenInvokerProject> run = pipelineRunner.run();
 
-    } catch (IOException | MavenInvokerProject.BuildToolException ex) {
-      LOGGER.error("Failed on module: {}", projectName, ex);
+        // run on the modules
+        List<UpdateSuggestion> updateSuggestion = Collections.emptyList();
+
+        try {
+
+            IRecommendationAlgorithm recommendationAlgorithm = 
+                RecommendationAlgorithmInitHelper.InitializeRecommendationAlgorithm(run.get(projectName), Paths.get(depGraphFile), graphAlgorithm);
+
+            updateSuggestion = recommendationAlgorithm.run(orgGav, targetGav);
+
+        } catch (IOException | MavenInvokerProject.BuildToolException ex) {
+            LOGGER.error("Failed on module: {}", projectName, ex);
+        }
+
+        try {
+
+            String fileNamePrefix = projectName;
+            if (StringUtils.isEmpty(fileNamePrefix) || fileNamePrefix == ".") {
+                fileNamePrefix = modulePath.getParent().getFileName().toString();
+            }
+
+            Path outputCsvFile = outputDir.resolve(fileNamePrefix + "_recommendation_results.csv");
+            CSVWriter writer = new CSVWriter(new FileWriter(outputCsvFile.toFile()));
+            StatefulBeanToCsv<UpdateSuggestion> sbc = new StatefulBeanToCsvBuilder<UpdateSuggestion>(writer)
+                    .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
+                    .build();
+            sbc.write(updateSuggestion);
+            writer.close();
+            LOGGER.info("Wrote results to file: {}", outputCsvFile.getFileName().toString());
+
+        } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
+            LOGGER.error("Failed to write csv file with: ", e);
+        }
     }
-
-    try {
-
-      String fileNamePrefix = projectName;
-      if (StringUtils.isEmpty(fileNamePrefix) || fileNamePrefix == ".") {
-        fileNamePrefix = modulePath.getParent().getFileName().toString();
-      }
-
-      Path outputCsvFile = outputDir.resolve(fileNamePrefix + "_recommendation_results.csv");
-      CSVWriter writer = new CSVWriter(new FileWriter(outputCsvFile.toFile()));
-      StatefulBeanToCsv<UpdateSuggestion> sbc =
-          new StatefulBeanToCsvBuilder<UpdateSuggestion>(writer)
-              .withSeparator(CSVWriter.DEFAULT_SEPARATOR)
-              .build();
-      sbc.write(updateSuggestion);
-      writer.close();
-      LOGGER.info("Wrote results to file: {}", outputCsvFile.getFileName().toString());
-
-    } catch (CsvRequiredFieldEmptyException | CsvDataTypeMismatchException | IOException e) {
-      LOGGER.error("Failed to write csv file with: ", e);
-    }
-  }
 }

@@ -13,8 +13,10 @@ import de.upb.upcy.base.build.Utils;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.update.build.PipelineRunner;
 import de.upb.upcy.update.build.Result;
+import de.upb.upcy.update.helper.RecommendationAlgorithmInitHelper;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
 import de.upb.upcy.update.recommendation.algorithms.EdmondsKarpRecommendationAlgorithm;
+import de.upb.upcy.update.recommendation.algorithms.IRecommendationAlgorithm;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -190,7 +192,7 @@ public class MainComputeUpdateSuggestion {
 
                     aggResults.addAll(
                             runOnModule(
-                                    run.get(module.getKey()), csvFile, outputDir, module.getKey(), module.getValue()));
+                                    run.get(module.getKey()), csvFile, outputDir, module.getKey(), module.getValue(), graphAlgorithm));
                 } catch (IOException ex) {
                     LOGGER.error("Failed on module: {}", module.getKey(), ex);
                 }
@@ -219,10 +221,11 @@ public class MainComputeUpdateSuggestion {
             String csvFile,
             String outputDir,
             String moduleName,
-            List<Result> results)
+            List<Result> results,
+            String graphAlgorithm)
             throws IOException {
         return runOnModule(
-                mavenInvokerProject, Paths.get(csvFile), Paths.get(outputDir), moduleName, results);
+                mavenInvokerProject, Paths.get(csvFile), Paths.get(outputDir), moduleName, results, graphAlgorithm);
     }
 
     public static List<UpdateSuggestion> runOnModule(
@@ -230,7 +233,8 @@ public class MainComputeUpdateSuggestion {
             Path csvFile,
             Path outputDir,
             String moduleName,
-            List<Result> results)
+            List<Result> results,
+            String graphAlgorithm)
             throws IOException {
 
         LOGGER.info("Running on project - module: {}", moduleName);
@@ -286,9 +290,10 @@ public class MainComputeUpdateSuggestion {
             // skip this module, but not the whole project
             return Collections.emptyList();
         }
-        EdmondsKarpRecommendationAlgorithm recommendationAlgorithm;
+        IRecommendationAlgorithm recommendationAlgorithm;
         try {
-            recommendationAlgorithm = new EdmondsKarpRecommendationAlgorithm(mavenInvokerProject, depGraphFile);
+            recommendationAlgorithm = RecommendationAlgorithmInitHelper.InitializeRecommendationAlgorithm(
+                mavenInvokerProject, depGraphFile, graphAlgorithm);
         } catch (IOException ex) {
             LOGGER.error("Failed to establish neo4j connection");
             return Collections.emptyList();
