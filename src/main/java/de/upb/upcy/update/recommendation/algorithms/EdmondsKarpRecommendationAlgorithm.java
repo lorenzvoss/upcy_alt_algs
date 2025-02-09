@@ -1,4 +1,4 @@
-package de.upb.upcy.update.recommendation;
+package de.upb.upcy.update.recommendation.algorithms;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Stopwatch;
@@ -11,6 +11,13 @@ import de.upb.upcy.base.graph.GraphModel;
 import de.upb.upcy.base.graph.GraphParser;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.base.mvn.MavenSearchAPIClient;
+import de.upb.upcy.update.recommendation.BlossomGraphCreator;
+import de.upb.upcy.update.recommendation.CGBuilder;
+import de.upb.upcy.update.recommendation.CustomEdge;
+import de.upb.upcy.update.recommendation.IRecommendationAlgorithm;
+import de.upb.upcy.update.recommendation.MinCut;
+import de.upb.upcy.update.recommendation.NodeMatchUtil;
+import de.upb.upcy.update.recommendation.UpdateSuggestion;
 import de.upb.upcy.update.recommendation.check.UpdateCheck;
 import de.upb.upcy.update.recommendation.check.Violation;
 import de.upb.upcy.update.recommendation.cypher.CypherQueryCreator;

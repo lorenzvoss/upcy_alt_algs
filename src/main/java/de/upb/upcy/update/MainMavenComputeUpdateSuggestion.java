@@ -7,8 +7,9 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.update.build.PipelineRunner;
-import de.upb.upcy.update.recommendation.EdmondsKarpRecommendationAlgorithm;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
+import de.upb.upcy.update.recommendation.algorithms.EdmondsKarpRecommendationAlgorithm;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
