@@ -7,7 +7,7 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.update.build.PipelineRunner;
-import de.upb.upcy.update.recommendation.RecommendationAlgorithm;
+import de.upb.upcy.update.recommendation.EdmondsKarpRecommendationAlgorithm;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -129,8 +129,8 @@ public class MainMavenComputeUpdateSuggestion {
 
     try {
 
-      RecommendationAlgorithm recommendationAlgorithm =
-          new RecommendationAlgorithm(run.get(projectName), Paths.get(depGraphFile));
+      EdmondsKarpRecommendationAlgorithm recommendationAlgorithm =
+          new EdmondsKarpRecommendationAlgorithm(run.get(projectName), Paths.get(depGraphFile));
 
       updateSuggestion = recommendationAlgorithm.run(orgGav, targetGav);
 

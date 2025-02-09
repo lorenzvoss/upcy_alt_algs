@@ -16,6 +16,9 @@ import de.upb.upcy.update.recommendation.check.Violation;
 import de.upb.upcy.update.recommendation.cypher.CypherQueryCreator;
 import de.upb.upcy.update.recommendation.exception.CompatabilityComputeException;
 import de.upb.upcy.update.recommendation.exception.EmptyCallGraphException;
+import soot.jimple.IdentityRef;
+import soot.rtlib.tamiflex.IUnexpectedReflectiveCallHandler;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -60,9 +63,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author adann
  */
-public class RecommendationAlgorithm {
+public class EdmondsKarpRecommendationAlgorithm implements IRecommendationAlgorithm{
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(RecommendationAlgorithm.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(EdmondsKarpRecommendationAlgorithm.class);
   private final DaoMvnArtifactNode doaMvnArtifactNode;
 
   private final MavenInvokerProject mavenInvokerProject;
@@ -79,7 +82,7 @@ public class RecommendationAlgorithm {
   private CypherQueryCreator cypherQueryCreator;
   private String targetGav;
 
-  public RecommendationAlgorithm(MavenInvokerProject mavenInvokerProject, Path depGraphJsonFile)
+  public EdmondsKarpRecommendationAlgorithm(MavenInvokerProject mavenInvokerProject, Path depGraphJsonFile)
       throws IOException {
     LOGGER.debug("Init connection to Neo4j");
     Driver driver = Neo4JConnector.getDriver();
@@ -244,7 +247,7 @@ public class RecommendationAlgorithm {
         new AsSubgraph<>(
             depGraph,
             depGraph.vertexSet().stream()
-                .filter(RecommendationAlgorithm::isRelevantCompileDependency)
+                .filter(EdmondsKarpRecommendationAlgorithm::isRelevantCompileDependency)
                 .collect(Collectors.toSet()),
             depGraph.edgeSet().stream()
                 .filter(x -> x.getResolution() == GraphModel.ResolutionType.INCLUDED)
@@ -374,7 +377,7 @@ public class RecommendationAlgorithm {
         new AsSubgraph<>(
             blossemedDepGraph,
             blossemedDepGraph.vertexSet().stream()
-                .filter(RecommendationAlgorithm::isRelevantCompileDependency)
+                .filter(EdmondsKarpRecommendationAlgorithm::isRelevantCompileDependency)
                 .collect(Collectors.toSet()),
             blossemedDepGraph.edgeSet());
 

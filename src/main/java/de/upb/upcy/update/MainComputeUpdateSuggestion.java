@@ -13,7 +13,7 @@ import de.upb.upcy.base.build.Utils;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
 import de.upb.upcy.update.build.PipelineRunner;
 import de.upb.upcy.update.build.Result;
-import de.upb.upcy.update.recommendation.RecommendationAlgorithm;
+import de.upb.upcy.update.recommendation.EdmondsKarpRecommendationAlgorithm;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -59,6 +59,12 @@ public class MainComputeUpdateSuggestion {
         }
         String rootDir = args[0];
 
+        // Check if a certain algorithm should be used
+        String graphAlgorithm = "MinSTCut";
+        if (args.length > 1) {
+            graphAlgorithm = args[2];
+        }
+
         // get the csv file to work on
         List<Path> csvFiles = new ArrayList<>();
         try (Stream<Path> walkStream = Files.walk(Paths.get(rootDir))) {
@@ -88,7 +94,7 @@ public class MainComputeUpdateSuggestion {
 
             Path statusFile = statusCacheFolder.resolve(csvFile.getFileName().toString() + ".status");
             try {
-                handleProject(csvFile, parentDir);
+                handleProject(csvFile, parentDir, graphAlgorithm);
                 Files.createFile(statusFile);
                 Files.write(statusFile, "DONE".getBytes(StandardCharsets.UTF_8));
             } catch (IOException e) {
@@ -111,7 +117,7 @@ public class MainComputeUpdateSuggestion {
         }
     }
 
-    public static void handleProject(Path csvFile, Path outputDir)
+    public static void handleProject(Path csvFile, Path outputDir, String graphAlgorithm)
             throws IOException, GitAPIException {
         final Path parent = csvFile.getParent();
 
@@ -279,9 +285,9 @@ public class MainComputeUpdateSuggestion {
             // skip this module, but not the whole project
             return Collections.emptyList();
         }
-        RecommendationAlgorithm recommendationAlgorithm;
+        EdmondsKarpRecommendationAlgorithm recommendationAlgorithm;
         try {
-            recommendationAlgorithm = new RecommendationAlgorithm(mavenInvokerProject, depGraphFile);
+            recommendationAlgorithm = new EdmondsKarpRecommendationAlgorithm(mavenInvokerProject, depGraphFile);
         } catch (IOException ex) {
             LOGGER.error("Failed to establish neo4j connection");
             return Collections.emptyList();
