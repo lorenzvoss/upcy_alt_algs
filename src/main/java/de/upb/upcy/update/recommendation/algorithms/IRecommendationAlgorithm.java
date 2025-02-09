@@ -1,4 +1,4 @@
-package de.upb.upcy.update.recommendation;
+package de.upb.upcy.update.recommendation.algorithms;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,6 +9,7 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 
 import de.upb.upcy.base.graph.GraphModel;
 import de.upb.upcy.base.mvn.MavenInvokerProject;
+import de.upb.upcy.update.recommendation.UpdateSuggestion;
 
 public interface IRecommendationAlgorithm {
     public Pair<DefaultDirectedGraph<GraphModel.Artifact, GraphModel.Dependency>, GraphModel>
