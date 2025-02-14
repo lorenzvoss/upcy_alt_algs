@@ -15,7 +15,6 @@ import de.upb.upcy.update.build.PipelineRunner;
 import de.upb.upcy.update.build.Result;
 import de.upb.upcy.update.helper.RecommendationAlgorithmInitHelper;
 import de.upb.upcy.update.recommendation.UpdateSuggestion;
-import de.upb.upcy.update.recommendation.algorithms.EdmondsKarpRecommendationAlgorithm;
 import de.upb.upcy.update.recommendation.algorithms.IRecommendationAlgorithm;
 
 import java.io.BufferedWriter;
@@ -63,9 +62,9 @@ public class MainComputeUpdateSuggestion {
         String rootDir = args[0];
 
         // Check if a certain algorithm should be used
-        String graphAlgorithm = "MinSTCut";
+        String graphAlgorithm = "edmondskarp";
         if (args.length > 1) {
-            graphAlgorithm = args[2];
+            graphAlgorithm = args[1];
         }
 
         // get the csv file to work on
@@ -122,6 +121,8 @@ public class MainComputeUpdateSuggestion {
 
     public static void handleProject(Path csvFile, Path outputDir, String graphAlgorithm)
             throws IOException, GitAPIException {
+        LOGGER.info("Parsing csv file: {}", csvFile.toAbsolutePath().toString());
+
         final Path parent = csvFile.getParent();
 
         final String projectName = parent.getFileName().toString();
@@ -192,7 +193,8 @@ public class MainComputeUpdateSuggestion {
 
                     aggResults.addAll(
                             runOnModule(
-                                    run.get(module.getKey()), csvFile, outputDir, module.getKey(), module.getValue(), graphAlgorithm));
+                                    run.get(module.getKey()), csvFile, outputDir, module.getKey(), module.getValue(),
+                                    graphAlgorithm));
                 } catch (IOException ex) {
                     LOGGER.error("Failed on module: {}", module.getKey(), ex);
                 }
@@ -293,7 +295,7 @@ public class MainComputeUpdateSuggestion {
         IRecommendationAlgorithm recommendationAlgorithm;
         try {
             recommendationAlgorithm = RecommendationAlgorithmInitHelper.InitializeRecommendationAlgorithm(
-                mavenInvokerProject, depGraphFile, graphAlgorithm);
+                    mavenInvokerProject, depGraphFile, graphAlgorithm);
         } catch (IOException ex) {
             LOGGER.error("Failed to establish neo4j connection");
             return Collections.emptyList();
