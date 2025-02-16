@@ -25,6 +25,8 @@ public class RecommendationAlgorithmInitHelper {
             case "gomory":
             case "gusfieldgomory":
                 return new GusfieldGomoryHuCutTreeRecommendationAlgorithm(mavenInvokerProject, depGraphJsonFile);
+            case "pushrelabel":
+                return new PushRelabelRecommendationAlgorithm(mavenInvokerProject, depGraphJsonFile);
             case "edmonds":
             case "karp":
             case "edmondskarp":
