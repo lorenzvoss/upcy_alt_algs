@@ -22,7 +22,6 @@ import de.upb.upcy.update.recommendation.check.Violation;
 import de.upb.upcy.update.recommendation.cypher.CypherQueryCreator;
 import de.upb.upcy.update.recommendation.exception.CompatabilityComputeException;
 import de.upb.upcy.update.recommendation.exception.EmptyCallGraphException;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -67,9 +66,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author adann
  */
-public class PushRelabelRecommendationAlgorithm implements IRecommendationAlgorithm{
+public class PushRelabelRecommendationAlgorithm implements IRecommendationAlgorithm {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PushRelabelRecommendationAlgorithm.class);
+  private static final Logger LOGGER =
+      LoggerFactory.getLogger(PushRelabelRecommendationAlgorithm.class);
   private final DaoMvnArtifactNode doaMvnArtifactNode;
 
   private final MavenInvokerProject mavenInvokerProject;
@@ -86,8 +86,8 @@ public class PushRelabelRecommendationAlgorithm implements IRecommendationAlgori
   private CypherQueryCreator cypherQueryCreator;
   private String targetGav;
 
-  public PushRelabelRecommendationAlgorithm(MavenInvokerProject mavenInvokerProject, Path depGraphJsonFile)
-      throws IOException {
+  public PushRelabelRecommendationAlgorithm(
+      MavenInvokerProject mavenInvokerProject, Path depGraphJsonFile) throws IOException {
     LOGGER.debug("Init connection to Neo4j");
     Driver driver = Neo4JConnector.getDriver();
     LOGGER.info("Connected successfully to Neo4j");
