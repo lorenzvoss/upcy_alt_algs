@@ -103,6 +103,8 @@ public class MainComputeUpdateSuggestion {
         LOGGER.error("Failed to Checkout project {} with", parentDir.getFileName(), e);
       }
     }
+
+    LOGGER.info("Done with evaluation tests");
   }
 
   public static void awaitTerminationAfterShutdown(ExecutorService threadPool) {
