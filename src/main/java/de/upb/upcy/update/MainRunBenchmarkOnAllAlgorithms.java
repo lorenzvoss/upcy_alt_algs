@@ -93,7 +93,7 @@ public class MainRunBenchmarkOnAllAlgorithms {
         if (results != null) {
           benchmarkResults.add(new BenchmarkResult(algorithm, update.getModulePath(), results));
         } else {
-          LOGGER.error("Executing benchmark went wrong. Benchmark results might be notvalid.");
+          LOGGER.error("Executing benchmark went wrong. Benchmark results might be not valid.");
         }
       }
     }
