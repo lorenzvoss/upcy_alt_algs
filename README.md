@@ -1,0 +1,1 @@
+This repository contains modifications to the UpCy tool that I made as part of my research on alternative graph algorithms for use in UpCy for my bachelor's thesis. For the original source code and instructions for the tool, please refer to the original repository: https://github.com/secure-software-engineering/upcy.
